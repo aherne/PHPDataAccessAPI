@@ -216,7 +216,7 @@ Following methods are relevant for querying:
 
 ### Class ConnectionSingleton
 
-[Lucinda\SQL\ConnectionSingleton](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/ConnectionSingleton.php) can be use to get a single [Lucinda\SQL\Connection](#class-connection) per user session. Has following static methods:
+[Lucinda\SQL\ConnectionSingleton](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/ConnectionSingleton.php) class insures a single [Lucinda\SQL\Connection](#class-connection) is used per session. Has following static methods:
 
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
@@ -234,7 +234,7 @@ Please note this class closes all open connections automatically on destruction!
 
 ### Class ConnectionFactory
 
-[Lucinda\SQL\ConnectionFactory](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/ConnectionFactory.php) can be use to get a single [Lucinda\SQL\Connection](#class-connection) per user session and server name. Has following static methods:
+[Lucinda\SQL\ConnectionFactory](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/ConnectionFactory.php) class insures single [Lucinda\SQL\Connection](#class-connection) per session and server name. Has following static methods:
 
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
