@@ -21,7 +21,7 @@ The whole idea of working with SQL databases (vendors) is reduced to following s
 
 - **[configuration](#configuration)**: setting up an XML file where SQL vendors used by your site are configured per development environment
 - **[execution](#execution)**: using [Lucinda\SQL\Wrapper](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/Wrapper.php) to read above XML based on development environment, compile [Lucinda\SQL\DataSource](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/DataSource.php) object(s) storing connection information and inject them statically into
-[Lucinda\SQL\ConnectionSingleton](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/ConnectionSingleton.php) or [Lucinda\SQL\ConnectionFactory](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/ConnectionFactory.php) classes to use in querying
+[Lucinda\SQL\ConnectionSingleton](#class-connectionsingleton) or [Lucinda\SQL\ConnectionFactory](#class-connectionfactory) classes to use in querying
 
 API is fully PSR-4 compliant, only requiring PHP7.1+ interpreter, SimpleXML and PDO extensions. To quickly see how it works, check:
 
@@ -92,7 +92,7 @@ Both classes above insure a single [Lucinda\SQL\Connection](#class-connection) i
 - **preparedStatement**: returns a [Lucinda\SQL\PreparedStatement](#class-preparedstatement) object to use in creation and execution of a sql prepared statement
 - **transaction**: returns a [Lucinda\SQL\Transaction](#class-transaction) object to use in wrapping operations with above two in transactions
 
-Once an SQL statement was executed via *execute* methods above, users are able to process results based on [Lucinda\SQL\StatementResults](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/StatementResults.php) object returned.
+Once an SQL statement was executed via *execute* methods above, users are able to process results based on [Lucinda\SQL\StatementResults](#class-statementresults) object returned.
 
 ## Installation
 
@@ -195,7 +195,7 @@ $users = $connection->statement("SELECT * FROM users")->toList();
 
 ### Class Connection
 
-Now that a [Lucinda\SQL\Connection](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/Connection.php) is retrieved, you are finally able to query database.
+[Lucinda\SQL\Connection](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/Connection.php) can be used to execute operations on a connection.
 
 Following methods are relevant to connection management (HANDLED BY API AUTOMATICALLY, so **to be used only in niche situations**):
 
@@ -214,17 +214,14 @@ Following methods are relevant for querying:
 | preparedStatement | void | [Lucinda\SQL\PreparedStatement](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/PreparedStatement.php) | Creates a prepared statement to use in querying. |
 | transaction | void | [Lucinda\SQL\Transaction](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/Transaction.php) | Creates a transaction wrap above operations with. |
 
-
 ### Class ConnectionSingleton
 
-[Lucinda\SQL\ConnectionSingleton](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/ConnectionSingleton.php) defines following public methods:
-
+[Lucinda\SQL\ConnectionSingleton](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/ConnectionSingleton.php) can be use to get a single [Lucinda\SQL\Connection](#class-connection) per user session. Has following static methods:
 
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
 | static setDataSource | [Lucinda\SQL\DataSource](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/DataSource.php) | void | Sets data source detected beforehand. Done automatically by API! |
 | static getInstance | void | [Lucinda\SQL\Connection](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/Connection.php) | Connects to server based on above data source ONCE and returns connection for later querying. Throws [Lucinda\SQL\ConnectionException](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/ConnectionException.php) if connection fails! |
-| __destruct | void | void | Automatically closes connection when it becomes idle. Done automatically by API! |
 
 Usage example:
 
@@ -233,15 +230,16 @@ $connection = Lucinda\SQL\ConnectionSingleton::getInstance();
 $connection->statement()->execute("UPDATE users SET name='John' WHERE name='Jane'");
 ```
 
+Please note this class closes all open connections automatically on destruction!
+
 ### Class ConnectionFactory
 
-[Lucinda\SQL\ConnectionFactory](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/ConnectionFactory.php) defines following public methods:
+[Lucinda\SQL\ConnectionFactory](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/ConnectionFactory.php) can be use to get a single [Lucinda\SQL\Connection](#class-connection) per user session and server name. Has following static methods:
 
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
 | static setDataSource | string $serverName, [Lucinda\SQL\DataSource](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/DataSource.php) | void | Sets data source detected beforehand per value of *name* attribute @ **server** tag. Done automatically by API! |
 | static getInstance | string $serverName | [Lucinda\SQL\Connection](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/Connection.php) | Connects to server based on above data source ONCE and returns connection for later querying. Throws [Lucinda\SQL\ConnectionException](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/ConnectionException.php) if connection fails! |
-| __destruct | void | void | Automatically closes each connection when it becomes idle. Done automatically by API! |
 
 Usage example:
 
@@ -252,7 +250,7 @@ $conection->statement()->execute("UPDATE users SET name='John' WHERE name='Jane'
 
 ### Class Statement
 
-[Lucinda\SQL\Statement](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/Statement.php) runs normal SQL unprepared statements and comes with following public methods:
+[Lucinda\SQL\Statement](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/Statement.php) implements normal SQL unprepared statement operations and comes with following public methods:
 
 
 | Method | Arguments | Returns | Description |
@@ -268,9 +266,11 @@ $statement = $connection->statement();
 $resultSet = $statement->execute("SELECT id FROM users WHERE name='".$statement->quote($name)."'");
 ```
 
+Please note this class closes all open connections automatically on destruction!
+
 ### Class PreparedStatement
 
-[Lucinda\SQL\PreparedStatement](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/PreparedStatement.php) runs SQL prepared statements and comes with following public methods:
+[Lucinda\SQL\PreparedStatement](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/PreparedStatement.php) implements SQL prepared statement operations and comes with following public methods:
 
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
@@ -290,7 +290,7 @@ $resultSet = $preparedStatement->execute();
 
 ### Class Transaction
 
-[Lucinda\SQL\Transaction](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/Transaction.php) can wrap *execute* methods above in transactions, in order to maintain data integrity, and thus comes with following public methods:
+[Lucinda\SQL\Transaction](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/Transaction.php) can wrap *execute* methods of two classes above in transactions, in order to maintain data integrity, and thus comes with following public methods:
 
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
@@ -310,7 +310,7 @@ $transaction->commit();
 
 ### Class StatementResults
 
-[Lucinda\SQL\StatementResults](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/StatementResults.php). [Lucinda\SQL\StatementResults](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/StatementResults.php) object returned. This class comes with following public methods:
+[Lucinda\SQL\StatementResults](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/src/StatementResults.php) encapsulates patterns of processing results of sql statement execution and comes with following public methods:
 
 | Method | Arguments | Returns | Description |
 | --- | --- | --- | --- |
@@ -323,4 +323,3 @@ $transaction->commit();
 | toList | void | array | Gets all resulting rows, each as column-value associative array, following SELECT statement execution. |
 
 Usage examples of above methods can be seen below or in [unit tests](https://github.com/aherne/php-sql-data-access-api/blob/v3.0.0/tests/StatementResultsTest.php)!
-
